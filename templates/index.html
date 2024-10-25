@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitget Data Downloader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6B46C1 0%, #321c64 100%);
+            color: #2d3748;
+        }
+
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(107, 70, 193, 0.2);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #44337A;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #553C9A;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E9D8FD;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #6B46C1;
+            box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.1);
+        }
+
+        /* Style for disabled date inputs */
+        input[type="date"]:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #805AD5 0%, #553C9A 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.2);
+            background: linear-gradient(135deg, #6B46C1 0%, #44337A 100%);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            background: #CBD5E0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+            color: #553C9A;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #E9D8FD;
+            border-top: 3px solid #6B46C1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .error {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #FED7E2;
+            border: 1px solid #FBB6CE;
+            border-radius: 12px;
+            color: #702459;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #6B46C1;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .date-hint {
+            font-size: 12px;
+            color: #6B46C1;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .glass-container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* Custom calendar picker style */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+            filter: invert(0.4) sepia(1) saturate(1.5) hue-rotate(230deg);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Custom select arrow */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B46C1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="glass-container">
+            <h1>Bitget Data Downloader</h1>
+            <form id="downloadForm">
+                <div class="form-group">
+                    <label for="symbol">Trading Pair</label>
+                    <input type="text" id="symbol" name="symbol" value="ALVAUSDT" required placeholder="ALVAUSDT">
+                    <div class="hint">Example: ALVAUSDT, BTCUSDT, ETHUSDT</div>
+                </div>
+                <div class="form-group">
+                    <label for="interval">Interval</label>
+                    <select id="interval" name="interval" required>
+                        <option value="1m">1 Minute</option>
+                        <option value="5m">5 Minutes</option>
+                        <option value="15m">15 Minutes</option>
+                        <option value="30m">30 Minutes</option>
+                        <option value="1h">1 Hour</option>
+                        <option value="4h">4 Hours</option>
+                        <option value="6h">6 Hours</option>
+                        <option value="12h">12 Hours</option>
+                        <option value="1d" selected>1 Day</option>
+                        <option value="1w">1 Week</option>
+                        <option value="1M">1 Month</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" required>
+                    <div class="date-hint">Select any past date</div>
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <input type="date" id="end_date" name="end_date" required>
+                    <div class="date-hint">Latest available: Previous day</div>
+                </div>
+                <button type="submit" id="downloadBtn">
+                    <span class="button-text">Download CSV</span>
+                </button>
+            </form>
+            <div id="loading" class="loading hidden">
+                <div class="loading-spinner"></div>
+                <span>Fetching Data...</span>
+            </div>
+            <div id="error" class="error hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        // Set up date restrictions on load
+        window.onload = function() {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            
+            // Set default date range (last 30 days from yesterday)
+            const defaultStart = new Date(yesterday);
+            defaultStart.setDate(yesterday.getDate() - 30);
+            
+            // Format dates
+            const yesterdayStr = formatDate(yesterday);
+            const defaultStartStr = formatDate(defaultStart);
+            
+            // Get date inputs
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+            
+            // Set max attribute to yesterday for both inputs
+            startDateInput.max = yesterdayStr;
+            endDateInput.max = yesterdayStr;
+            
+            // Set default values
+            startDateInput.value = defaultStartStr;
+            endDateInput.value = yesterdayStr;
+            
+            // Add event listeners to maintain valid date range
+            startDateInput.addEventListener('change', function() {
+                if (endDateInput.value && this.value > endDateInput.value) {
+                    this.value = endDateInput.value;
+                }
+            });
+            
+            endDateInput.addEventListener('change', function() {
+                if (startDateInput.value && this.value < startDateInput.value) {
+                    this.value = startDateInput.value;
+                }
+                if (this.value > yesterdayStr) {
+                    this.value = yesterdayStr;
+                }
+            });
+        }
+
+        document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            downloadBtn.disabled = true;
+            
+            try {
+                const formData = new FormData(e.target);
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error);
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bitget_${formData.get('symbol')}_${formData.get('start_date')}_${formData.get('end_date')}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            } catch (err) {
+                error.textContent = err.message;
+                error.classList.remove('hidden');
+            } finally {
+                loading.classList.remove('hidden');
+                downloadBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
