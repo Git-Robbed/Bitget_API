@@ -16,7 +16,6 @@ API_KEY = os.getenv('BITGET_API_KEY')
 if not API_KEY:
     print("Warning: BITGET_API_KEY not found in environment variables")
 
-app = Flask(__name__)
 
 def unix_timestamp(date_str, is_end_date=False):
     """Convert date string to unix timestamp in milliseconds"""
